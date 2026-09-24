@@ -1,0 +1,130 @@
+:root {
+    --bg-color: #f4f6f8;
+    --card-bg: #ffffff;
+    --text-primary: #1a202c;
+    --text-secondary: #718096;
+    --accent: #2b6cb0;
+    --badge-bg: #edf2f7;
+    --border-color: #e2e8f0;
+}
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    margin: 0;
+    padding: 2rem;
+}
+
+header {
+    max-width: 1200px;
+    margin: 0 auto 2rem auto;
+}
+
+h1 {
+    font-size: 1.8rem;
+    color: var(--text-primary);
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.tarjeta-moneda {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.imagenes-container {
+    display: flex;
+    justify-content: space-around;
+    padding: 1rem;
+    background-color: #fafafa;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.img-moneda {
+    width: 130px;
+    height: 130px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background-color: #e2e8f0;
+}
+
+.info-container {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.cabecera-tarjeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cabecera-tarjeta h2 {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.badge-estado {
+    background-color: var(--badge-bg);
+    color: var(--accent);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+
+.detalle-secundario {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0.35rem 0 1rem 0;
+}
+
+.especificaciones {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.notas {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    flex-grow: 1;
+    margin-bottom: 1rem;
+}
+
+.pie-tarjeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.75rem;
+    font-size: 0.85rem;
+}
+
+.precio {
+    font-weight: bold;
+    color: #2e7d32;
+    font-size: 1.1rem;
+}
+
+.id-tag {
+    color: var(--text-secondary);
+    font-family: monospace;
+}
