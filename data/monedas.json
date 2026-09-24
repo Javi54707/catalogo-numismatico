@@ -1,0 +1,34 @@
+[
+  {
+    "id": "ESP-1944-1PTA-01",
+    "tipo": "moneda",
+    "identificacion": {
+      "pais": "España",
+      "epoca": "Estado Español",
+      "valor_facial": "1 Peseta",
+      "ano_visible": 1944,
+      "ano_estrellas": [19, 44],
+      "ceca": "Madrid"
+    },
+    "tecnica": {
+      "material": "Bronce-Aluminio",
+      "peso_g": 3.5,
+      "diametro_mm": 21.0
+    },
+    "coleccionismo": {
+      "estado": "MBC+",
+      "referencia_catalogo": "KM#766"
+    },
+    "adquisicion": {
+      "origen": "Mercadillo Fuente de las Batallas",
+      "fecha_compra": "2026-09-24",
+      "precio_eur": 3.00,
+      "gastos_envio_eur": 0.00
+    },
+    "multimedia": {
+      "img_anverso": "./assets/img/ESP-1944-1PTA-01-anv.webp",
+      "img_reverso": "./assets/img/ESP-1944-1PTA-01-rev.webp"
+    },
+    "notas": "Pátina oscura uniforme. Ligero desgaste en el busto."
+  }
+]

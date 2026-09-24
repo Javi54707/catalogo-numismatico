@@ -1,0 +1,8 @@
+# Ignorar fotos originales pesadas
+assets/raw_img/*
+!assets/raw_img/.gitkeep
+
+# Ignorar archivos de sistema y cachés de Python
+.DS_Store
+Thumbs.db
+__pycache__/
