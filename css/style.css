@@ -128,3 +128,35 @@ h1 {
     color: var(--text-secondary);
     font-family: monospace;
 }
+
+.filtros-container {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.btn-filtro {
+    background-color: var(--badge-bg);
+    border: 1px solid var(--border-color);
+    padding: 0.4rem 0.9rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.btn-filtro.activo, .btn-filtro:hover {
+    background-color: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.sin-resultados {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 2rem;
+    font-style: italic;
+}
