@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Esquema de Colección de Monedas",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": { "type": "string", "description": "Identificador único (ej. ESP-1944-1PTA-01)" },
+      "tipo": { "type": "string", "const": "moneda" },
+      "identificacion": {
+        "type": "object",
+        "properties": {
+          "pais": { "type": "string" },
+          "epoca": { "type": "string" },
+          "valor_facial": { "type": "string" },
+          "ano_visible": { "type": "integer" },
+          "ano_estrellas": {
+            "type": "array",
+            "items": { "type": "integer" }
+          },
+          "ceca": { "type": "string" }
+        },
+        "required": ["pais", "valor_facial", "ano_visible"]
+      },
+      "tecnica": {
+        "type": "object",
+        "properties": {
+          "material": { "type": "string" },
+          "peso_g": { "type": "number" },
+          "diametro_mm": { "type": "number" }
+        }
+      },
+      "coleccionismo": {
+        "type": "object",
+        "properties": {
+          "estado": {
+            "type": "string",
+            "enum": ["SC", "EBC+", "EBC", "EBC-", "MBC+", "MBC", "MBC-", "BC+", "BC"]
+          },
+          "referencia_catalogo": { "type": "string" }
+        }
+      },
+      "adquisicion": {
+        "type": "object",
+        "properties": {
+          "origen": { "type": "string" },
+          "fecha_compra": { "type": "string", "format": "date" },
+          "precio_eur": { "type": "number" },
+          "gastos_envio_eur": { "type": "number" }
+        },
+        "required": ["precio_eur"]
+      },
+      "multimedia": {
+        "type": "object",
+        "properties": {
+          "img_anverso": { "type": "string", "pattern": "^\\./assets/img/.*\\.webp$" },
+          "img_reverso": { "type": "string", "pattern": "^\\./assets/img/.*\\.webp$" }
+        }
+      },
+      "notas": { "type": "string" }
+    },
+    "required": ["id", "tipo", "identificacion", "coleccionismo"]
+  }
+}

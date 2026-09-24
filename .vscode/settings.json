@@ -1,0 +1,11 @@
+{
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "/data/monedas.json"
+      ],
+      "url": "./schemas/moneda.schema.json"
+    }
+  ],
+  "python-envs.defaultEnvManager": "ms-python.python:system"
+}
