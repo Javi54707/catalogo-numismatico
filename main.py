@@ -185,7 +185,6 @@ def migrar_datos_antiguos():
 
 app.mount("/css", StaticFiles(directory="css"), name="css")
 app.mount("/js", StaticFiles(directory="js"), name="js")
-app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 
 @app.get("/")
 def ruta_principal():
