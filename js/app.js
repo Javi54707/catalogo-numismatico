@@ -8,8 +8,8 @@ let coleccionGlobal = [];
 async function cargarCatalogoCompleto() {
     try {
         const [respMonedas, respBilletes] = await Promise.all([
-            fetch('./data/monedas.json'),
-            fetch('./data/billetes.json')
+            fetch('/api/monedas'),
+            fetch('/api/billetes')
         ]);
 
         const monedas = respMonedas.ok ? await respMonedas.json() : [];
@@ -107,3 +107,82 @@ function configurarFiltros() {
         }
     });
 }
+
+// Lógica para añadir nuevas piezas desde el formulario
+document.getElementById('form-nueva-moneda').addEventListener('submit', async (e) => {
+    e.preventDefault(); // Evita que la página se recargue al enviar
+    
+    const btnSubmit = e.target.querySelector('button');
+    btnSubmit.textContent = 'Procesando foto...';
+    btnSubmit.disabled = true;
+
+    try {
+        // 1. Enviar la foto original al motor de compresión
+        const fotoInput = document.getElementById('in-foto-anv');
+        const formData = new FormData();
+        formData.append('file', fotoInput.files[0]);
+
+        const respFoto = await fetch('/api/upload-imagen', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const dataFoto = await respFoto.json();
+        
+        if (dataFoto.error) throw new Error(dataFoto.error);
+
+        // 2. Construir el objeto JSON con los datos del formulario y la ruta de la nueva foto
+        const nuevaMoneda = {
+            id: document.getElementById('in-id').value,
+            tipo: "moneda",
+            identificacion: {
+                pais: "Desconocido", // Valores por defecto para simplificar el ejemplo
+                epoca: "Sin especificar",
+                valor_facial: document.getElementById('in-valor').value,
+                ano_visible: parseInt(document.getElementById('in-ano').value),
+                ceca: "Sin especificar"
+            },
+            tecnica: {
+                material: "Desconocido",
+                peso_g: 0,
+                diametro_mm: 0
+            },
+            coleccionismo: {
+                estado: "MBC"
+            },
+            adquisicion: {
+                origen: "Panel Web",
+                fecha_compra: new Date().toISOString().split('T')[0], // Fecha de hoy automática
+                precio_eur: parseFloat(document.getElementById('in-precio').value),
+                gastos_envio_eur: 0
+            },
+            multimedia: {
+                img_anverso: dataFoto.ruta_generada, // La ruta .webp que nos devuelve FastAPI
+                img_reverso: "" 
+            },
+            notas: "Añadida mediante el sistema web v2.0."
+        };
+
+        // 3. Enviar el objeto JSON al endpoint de guardado
+        const respGuardar = await fetch('/api/monedas', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(nuevaMoneda)
+        });
+
+        if (respGuardar.ok) {
+            alert('✅ ¡Moneda procesada y guardada con éxito!');
+            e.target.reset(); // Limpiar el formulario
+            cargarCatalogoCompleto(); // Recargar la galería dinámicamente
+        }
+        
+    } catch (error) {
+        console.error("Error en el proceso:", error);
+        alert("❌ Hubo un error al guardar la pieza. Revisa la consola.");
+    } finally {
+        btnSubmit.textContent = 'Procesar y Guardar Pieza';
+        btnSubmit.disabled = false;
+    }
+});
