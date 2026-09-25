@@ -1,10 +1,75 @@
+let coleccionGlobal = [];
+
 document.addEventListener('DOMContentLoaded', () => {
     cargarCatalogoCompleto();
     configurarFiltros();
+    configurarAuth();
 });
 
-let coleccionGlobal = [];
+// --- AUTENTICACIÓN ---
+function configurarAuth() {
+    const btnLogin = document.getElementById('btn-login');
+    const panelCreacion = document.getElementById('panel-creacion');
+    
+    actualizarInterfazAdmin();
 
+    btnLogin.addEventListener('click', async () => {
+        const tokenActual = localStorage.getItem('numismatica_token');
+        
+        // Si ya estamos logueados, el botón sirve para cerrar sesión
+        if (tokenActual) {
+            localStorage.removeItem('numismatica_token');
+            actualizarInterfazAdmin();
+            renderizarCatalogo(coleccionGlobal); // Recargar para quitar papeleras
+            return;
+        }
+
+        // Si no estamos logueados, pedimos contraseña
+        const pass = prompt("Introduce la contraseña maestra:");
+        if (!pass) return;
+
+        try {
+            const resp = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: pass })
+            });
+
+            if (resp.ok) {
+                const data = await resp.json();
+                localStorage.setItem('numismatica_token', data.access_token);
+                actualizarInterfazAdmin();
+                renderizarCatalogo(coleccionGlobal); // Recargar para mostrar papeleras
+            } else {
+                alert("❌ Contraseña incorrecta");
+            }
+        } catch (error) {
+            console.error("Error de login:", error);
+        }
+    });
+}
+
+function actualizarInterfazAdmin() {
+    const btnLogin = document.getElementById('btn-login');
+    const panelCreacion = document.getElementById('panel-creacion');
+    const token = localStorage.getItem('numismatica_token');
+
+    if (token) {
+        btnLogin.textContent = "🔓 Cerrar Sesión";
+        btnLogin.style.backgroundColor = "#e53e3e"; // Rojo
+        panelCreacion.style.display = "block";
+    } else {
+        btnLogin.textContent = "🔒 Modo Admin";
+        btnLogin.style.backgroundColor = "var(--text-primary)"; // Oscuro
+        panelCreacion.style.display = "none";
+    }
+}
+
+function getToken() {
+    return localStorage.getItem('numismatica_token');
+}
+
+// --- CARGA Y RENDERIZADO ---
 async function cargarCatalogoCompleto() {
     try {
         const [respMonedas, respBilletes] = await Promise.all([
@@ -25,9 +90,10 @@ async function cargarCatalogoCompleto() {
 function renderizarCatalogo(items) {
     const contenedor = document.getElementById('galeria');
     contenedor.innerHTML = '';
+    const esAdmin = !!getToken(); // Comprobar si somos admin
 
     if (items.length === 0) {
-        contenedor.innerHTML = '<p class="sin-resultados">No hay piezas registradas en esta categoría.</p>';
+        contenedor.innerHTML = '<p class="sin-resultados">No hay piezas registradas.</p>';
         return;
     }
 
@@ -36,7 +102,6 @@ function renderizarCatalogo(items) {
         tarjeta.className = 'tarjeta-moneda';
 
         const esMoneda = item.tipo === 'moneda';
-        
         const detalleEspecifico = esMoneda 
             ? `<span><strong>Material:</strong> ${item.tecnica.material}</span>
                <span><strong>Peso:</strong> ${item.tecnica.peso_g} g</span>
@@ -54,6 +119,11 @@ function renderizarCatalogo(items) {
             : '';
 
         const valorAno = item.identificacion.ano_visible || item.identificacion.fecha_emision?.slice(0, 4) || '';
+
+        // El botón de borrar SOLO se inyecta si eres admin
+        const btnBorrar = esAdmin 
+            ? `<button class="btn-eliminar" onclick="eliminarPieza('${item.id}', '${item.tipo}')">🗑️</button>` 
+            : '';
 
         tarjeta.innerHTML = `
             <div class="imagenes-container">
@@ -73,11 +143,10 @@ function renderizarCatalogo(items) {
                 <div class="pie-tarjeta">
                     <span class="precio">${item.adquisicion.precio_eur.toFixed(2)} €</span>
                     <span class="id-tag">${item.id}</span>
-                    <button class="btn-eliminar" onclick="eliminarPieza('${item.id}', '${item.tipo}')">🗑️</button>
+                    ${btnBorrar}
                 </div>
             </div>
         `;
-
         contenedor.appendChild(tarjeta);
     });
 }
@@ -109,107 +178,108 @@ function configurarFiltros() {
     });
 }
 
-// Lógica para añadir nuevas piezas desde el formulario
+// --- LÓGICA CRUD PROTEGIDA ---
 document.getElementById('form-nueva-moneda').addEventListener('submit', async (e) => {
-    e.preventDefault(); // Evita que la página se recargue al enviar
-    
+    e.preventDefault();
+    const token = getToken();
+    if (!token) return alert("Debes iniciar sesión");
+
     const btnSubmit = e.target.querySelector('button');
-    btnSubmit.textContent = 'Procesando foto...';
+    btnSubmit.textContent = 'Procesando...';
     btnSubmit.disabled = true;
 
     try {
-        // 1. Enviar la foto original al motor de compresión
         const fotoInput = document.getElementById('in-foto-anv');
         const formData = new FormData();
         formData.append('file', fotoInput.files[0]);
 
+        // 1. Subir imagen (Añadimos el Token)
         const respFoto = await fetch('/api/upload-imagen', {
             method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
             body: formData
         });
         
+        if (respFoto.status === 401) throw new Error("Sesión caducada");
         const dataFoto = await respFoto.json();
-        
         if (dataFoto.error) throw new Error(dataFoto.error);
 
-        // 2. Construir el objeto JSON con los datos del formulario y la ruta de la nueva foto
         const nuevaMoneda = {
             id: document.getElementById('in-id').value,
             tipo: "moneda",
             identificacion: {
-                pais: "Desconocido", // Valores por defecto para simplificar el ejemplo
+                pais: "Desconocido",
                 epoca: "Sin especificar",
                 valor_facial: document.getElementById('in-valor').value,
                 ano_visible: parseInt(document.getElementById('in-ano').value),
                 ceca: "Sin especificar"
             },
-            tecnica: {
-                material: "Desconocido",
-                peso_g: 0,
-                diametro_mm: 0
-            },
-            coleccionismo: {
-                estado: "MBC"
-            },
+            tecnica: { material: "Desconocido", peso_g: 0, diametro_mm: 0 },
+            coleccionismo: { estado: "MBC" },
             adquisicion: {
                 origen: "Panel Web",
-                fecha_compra: new Date().toISOString().split('T')[0], // Fecha de hoy automática
+                fecha_compra: new Date().toISOString().split('T')[0],
                 precio_eur: parseFloat(document.getElementById('in-precio').value),
                 gastos_envio_eur: 0
             },
-            multimedia: {
-                img_anverso: dataFoto.ruta_generada, // La ruta .webp que nos devuelve FastAPI
-                img_reverso: "" 
-            },
+            multimedia: { img_anverso: dataFoto.ruta_generada, img_reverso: "" },
             notas: "Añadida mediante el sistema web v2.0."
         };
 
-        // 3. Enviar el objeto JSON al endpoint de guardado
+        // 2. Guardar moneda (Añadimos el Token)
         const respGuardar = await fetch('/api/monedas', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(nuevaMoneda)
         });
 
         if (respGuardar.ok) {
-            alert('✅ ¡Moneda procesada y guardada con éxito!');
-            e.target.reset(); // Limpiar el formulario
-            cargarCatalogoCompleto(); // Recargar la galería dinámicamente
+            alert('✅ ¡Pieza guardada!');
+            e.target.reset();
+            cargarCatalogoCompleto();
+        } else {
+            throw new Error("Error de autorización al guardar");
         }
         
     } catch (error) {
-        console.error("Error en el proceso:", error);
-        alert("❌ Hubo un error al guardar la pieza. Revisa la consola.");
+        console.error(error);
+        alert(`❌ Error: ${error.message}`);
+        if (error.message === "Sesión caducada") localStorage.removeItem('numismatica_token');
     } finally {
         btnSubmit.textContent = 'Procesar y Guardar Pieza';
         btnSubmit.disabled = false;
+        actualizarInterfazAdmin();
     }
 });
 
-// Lógica para eliminar piezas
 async function eliminarPieza(id, tipo) {
-    // Pedimos confirmación para evitar borrados accidentales
-    if (!confirm(`¿Estás seguro de que quieres eliminar la pieza con ID: ${id}?`)) {
-        return;
-    }
+    const token = getToken();
+    if (!token) return alert("Debes iniciar sesión");
+
+    if (!confirm(`¿Eliminar la pieza con ID: ${id}?`)) return;
 
     try {
         const endpoint = tipo === 'moneda' ? `/api/monedas/${id}` : `/api/billetes/${id}`;
-        
         const respuesta = await fetch(endpoint, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
         });
 
         if (respuesta.ok) {
-            alert('🗑️ Pieza eliminada del catálogo');
-            cargarCatalogoCompleto(); // Recargamos para que desaparezca visualmente
+            cargarCatalogoCompleto();
         } else {
-            throw new Error('Error al eliminar en el servidor');
+            throw new Error(respuesta.status === 401 ? 'Sesión caducada' : 'Error en el servidor');
         }
     } catch (error) {
-        console.error("Error:", error);
-        alert("❌ No se pudo eliminar la pieza.");
+        console.error(error);
+        alert(`❌ ${error.message}`);
+        if (error.message === 'Sesión caducada') {
+            localStorage.removeItem('numismatica_token');
+            actualizarInterfazAdmin();
+            renderizarCatalogo(coleccionGlobal);
+        }
     }
 }

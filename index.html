@@ -8,11 +8,14 @@
 </head>
 <body>
     <header>
-        <h1>🏛️ Colección Numismática</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>🏛️ Colección Numismática</h1>
+            <button id="btn-login" class="btn-filtro" style="background-color: var(--text-primary); color: white;">🔒 Modo Admin</button>
+        </div>
     </header>
     
     <main>
-        <section id="panel-creacion" style="background: var(--card-bg); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid var(--border-color);">
+        <section id="panel-creacion" style="display: none; background: var(--card-bg); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid var(--border-color);">
             <h2>➕ Añadir Nueva Moneda</h2>
             <form id="form-nueva-moneda" style="display: grid; gap: 1rem; grid-template-columns: 1fr 1fr;">
                 <input type="text" id="in-id" placeholder="ID (ej. ESP-1980-5PTA)" required>

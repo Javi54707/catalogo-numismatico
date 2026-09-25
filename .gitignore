@@ -7,3 +7,5 @@ assets/raw_img/*
 Thumbs.db
 __pycache__/
 venv/
+.env
+numismatica.db
