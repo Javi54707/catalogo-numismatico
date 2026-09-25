@@ -54,6 +54,31 @@ async def guardar_moneda(moneda: dict):
         
     return {"mensaje": "Moneda registrada correctamente"}
 
+@app.delete("/api/monedas/{item_id}")
+async def eliminar_moneda(item_id: str):
+    with open("data/monedas.json", "r", encoding="utf-8") as f:
+        datos = json.load(f)
+    
+    # Filtramos la lista para quedarnos con todos MENOS el que queremos borrar
+    datos_nuevos = [m for m in datos if m.get("id") != item_id]
+    
+    with open("data/monedas.json", "w", encoding="utf-8") as f:
+        json.dump(datos_nuevos, f, indent=2, ensure_ascii=False)
+        
+    return {"mensaje": "Moneda eliminada correctamente"}
+
+@app.delete("/api/billetes/{item_id}")
+async def eliminar_billete(item_id: str):
+    with open("data/billetes.json", "r", encoding="utf-8") as f:
+        datos = json.load(f)
+    
+    datos_nuevos = [m for m in datos if m.get("id") != item_id]
+    
+    with open("data/billetes.json", "w", encoding="utf-8") as f:
+        json.dump(datos_nuevos, f, indent=2, ensure_ascii=False)
+        
+    return {"mensaje": "Billete eliminado correctamente"}
+
 # 3. Servir el Frontend
 app.mount("/css", StaticFiles(directory="css"), name="css")
 app.mount("/js", StaticFiles(directory="js"), name="js")

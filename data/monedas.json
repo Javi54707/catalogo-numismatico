@@ -33,35 +33,5 @@
       "img_reverso": "./assets/img/ESP-1944-1PTA-01-rev.webp"
     },
     "notas": "Pátina oscura uniforme. Ligero desgaste en el busto."
-  },
-  {
-    "id": "6767",
-    "tipo": "moneda",
-    "identificacion": {
-      "pais": "Desconocido",
-      "epoca": "Sin especificar",
-      "valor_facial": "67",
-      "ano_visible": 67,
-      "ceca": "Sin especificar"
-    },
-    "tecnica": {
-      "material": "Desconocido",
-      "peso_g": 0,
-      "diametro_mm": 0
-    },
-    "coleccionismo": {
-      "estado": "MBC"
-    },
-    "adquisicion": {
-      "origen": "Panel Web",
-      "fecha_compra": "2026-09-25",
-      "precio_eur": 67,
-      "gastos_envio_eur": 0
-    },
-    "multimedia": {
-      "img_anverso": "./assets/img/Captura de pantalla 2026-03-13 162738.webp",
-      "img_reverso": ""
-    },
-    "notas": "Añadida mediante el sistema web v2.0."
   }
 ]

@@ -73,6 +73,7 @@ function renderizarCatalogo(items) {
                 <div class="pie-tarjeta">
                     <span class="precio">${item.adquisicion.precio_eur.toFixed(2)} €</span>
                     <span class="id-tag">${item.id}</span>
+                    <button class="btn-eliminar" onclick="eliminarPieza('${item.id}', '${item.tipo}')">🗑️</button>
                 </div>
             </div>
         `;
@@ -186,3 +187,29 @@ document.getElementById('form-nueva-moneda').addEventListener('submit', async (e
         btnSubmit.disabled = false;
     }
 });
+
+// Lógica para eliminar piezas
+async function eliminarPieza(id, tipo) {
+    // Pedimos confirmación para evitar borrados accidentales
+    if (!confirm(`¿Estás seguro de que quieres eliminar la pieza con ID: ${id}?`)) {
+        return;
+    }
+
+    try {
+        const endpoint = tipo === 'moneda' ? `/api/monedas/${id}` : `/api/billetes/${id}`;
+        
+        const respuesta = await fetch(endpoint, {
+            method: 'DELETE'
+        });
+
+        if (respuesta.ok) {
+            alert('🗑️ Pieza eliminada del catálogo');
+            cargarCatalogoCompleto(); // Recargamos para que desaparezca visualmente
+        } else {
+            throw new Error('Error al eliminar en el servidor');
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("❌ No se pudo eliminar la pieza.");
+    }
+}
