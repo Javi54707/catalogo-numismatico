@@ -283,3 +283,38 @@ async function eliminarPieza(id, tipo) {
         }
     }
 }
+
+// --- LÓGICA DEL LIGHTBOX (Zoom de imágenes) ---
+document.addEventListener('DOMContentLoaded', () => {
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const btnCerrar = document.getElementById('lightbox-cerrar');
+
+    // Abrir foto y bloquear scroll
+    document.getElementById('galeria').addEventListener('click', (e) => {
+        if (e.target.classList.contains('img-moneda')) {
+            lightboxImg.src = e.target.src;
+            lightbox.classList.add('activo');
+            document.body.style.overflow = 'hidden'; // <-- Bloquea el scroll del fondo
+        }
+    });
+
+    // Función unificada para cerrar y restaurar scroll
+    function cerrarLightbox() {
+        lightbox.classList.remove('activo');
+        document.body.style.overflow = ''; // <-- Restaura el scroll del fondo
+    }
+
+    // Eventos de cierre
+    btnCerrar.addEventListener('click', cerrarLightbox);
+
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) cerrarLightbox();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && lightbox.classList.contains('activo')) {
+            cerrarLightbox();
+        }
+    });
+});

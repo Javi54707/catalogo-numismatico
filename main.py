@@ -135,15 +135,40 @@ async def guardar_moneda(moneda: dict, db: Session = Depends(get_db), token: dic
     db.commit()
     return {"mensaje": "Pieza guardada en la base de datos"}
 
+# --- FUNCIÓN AUXILIAR PARA BORRAR DE LA NUBE ---
+def borrar_imagen_cloudinary(url: str):
+    # Si no hay imagen o es una ruta local antigua (./assets...), no hacemos nada
+    if not url or "cloudinary.com" not in url:
+        return 
+    try:
+        # La URL tiene este formato: .../image/upload/v1234567/catalogo_numismatico/nombre.webp
+        # Extraemos solo la parte final "catalogo_numismatico/nombre"
+        ruta = url.split("/upload/")[1]
+        if ruta.startswith("v") and "/" in ruta:
+            ruta = ruta.split("/", 1)[1] # Quitamos el número de versión
+        public_id = ruta.rsplit(".", 1)[0] # Quitamos la extensión .webp
+        
+        # Enviamos la orden de destrucción a los servidores de Cloudinary
+        cloudinary.uploader.destroy(public_id)
+    except Exception as e:
+        print(f"Error al limpiar Cloudinary: {e}")
+
+# --- ENDPOINT DE BORRADO ACTUALIZADO ---
 @app.delete("/api/monedas/{item_id}")
 @app.delete("/api/billetes/{item_id}")
 async def eliminar_pieza(item_id: str, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     pieza = db.query(models.Pieza).filter(models.Pieza.id == item_id).first()
     if not pieza:
         raise HTTPException(status_code=404, detail="Pieza no encontrada")
+    
+    # 1. Destruimos las imágenes en la nube
+    borrar_imagen_cloudinary(pieza.img_anverso)
+    borrar_imagen_cloudinary(pieza.img_reverso)
+    
+    # 2. Borramos el registro de la base de datos local
     db.delete(pieza)
     db.commit()
-    return {"mensaje": "Pieza eliminada de la base de datos"}
+    return {"mensaje": "Pieza y fotos asociadas eliminadas correctamente"}
 
 @app.on_event("startup")
 def migrar_datos_antiguos():
