@@ -1,13 +1,22 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+from dotenv import load_dotenv
 
-# Le decimos que cree un archivo numismatica.db en la raíz
-SQLALCHEMY_DATABASE_URL = "sqlite:///./numismatica.db"
+# Cargamos las variables del .env
+load_dotenv()
 
-# Para SQLite en FastAPI es obligatorio este connect_args
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
+# Leemos la URL de Neon. Si por algún motivo fallara, usamos SQLite como plan B
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./numismatica.db")
+
+# SQLAlchemy necesita un ajuste especial solo si es SQLite. 
+# Si es PostgreSQL (Neon), la conexión es directa.
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    )
+else:
+    engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
