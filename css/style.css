@@ -1,11 +1,12 @@
+/* --- PALETA NUMISMÁTICA GLOBAL --- */
 :root {
-    --bg-color: #f4f6f8;
-    --card-bg: #ffffff;
-    --text-primary: #1a202c;
-    --text-secondary: #718096;
-    --accent: #2b6cb0;
-    --badge-bg: #edf2f7;
-    --border-color: #e2e8f0;
+    --bg-color: #F4F1EA; /* Fondo general simulando papel antiguo muy sutil */
+    --card-bg: #FCFBF9; /* Marfil limpio para tarjetas y paneles */
+    --text-primary: #2C3E50; /* Azul/Gris muy oscuro, casi negro */
+    --text-secondary: #7F8C8D; /* Gris clásico */
+    --border-color: #E5E0D8; /* Beige/Gris claro para separadores */
+    --accent-color: #8C7B65; /* Bronce oscuro para botones principales y detalles */
+    --accent-light: #C5B79F; /* Bronce claro para bordes hover */
 }
 
 body {
@@ -16,16 +17,28 @@ body {
     padding: 2rem;
 }
 
+/* Tipografía clásica para títulos */
+h1, h2, h3, legend {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    color: var(--text-primary);
+}
+
+/* --- CABECERA (HEADER) --- */
 header {
+    background: var(--card-bg) !important;
+    border-bottom: 3px solid var(--accent-light) !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03) !important;
     max-width: 1200px;
     margin: 0 auto 2rem auto;
 }
 
-h1 {
-    font-size: 1.8rem;
-    color: var(--text-primary);
+header h1 {
+    color: var(--accent-color);
+    font-size: 1.8rem !important;
+    letter-spacing: 1px;
 }
 
+/* --- ESTRUCTURA PRINCIPAL --- */
 .grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -34,131 +47,220 @@ h1 {
     margin: 0 auto;
 }
 
-.tarjeta-moneda {
-    background-color: var(--card-bg);
+/* --- INPUTS Y SELECTS (Formulario, Buscador y Filtros) --- */
+input[type="text"], input[type="number"], select, textarea {
+    background-color: #ffffff;
     border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.6rem;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    box-sizing: border-box;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(197, 183, 159, 0.4);
+}
+
+/* --- BOTONES GLOBALES --- */
+button {
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+#btn-aplicar-filtros, #form-nueva-moneda button[type="submit"] {
+    background-color: var(--accent-color) !important;
+    color: white !important;
+    border: none !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#btn-aplicar-filtros:hover, #form-nueva-moneda button[type="submit"]:hover {
+    background-color: #6d5f4d !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Botón de Filtros en la cabecera */
+#btn-toggle-filtros {
+    background-color: var(--accent-color) !important;
+    color: white !important;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+#btn-toggle-filtros:hover {
+    background-color: #6d5f4d !important;
+    transform: translateY(-2px);
+}
+
+/* Cruz de cerrar el panel lateral */
+#btn-cerrar-filtros {
+    color: var(--accent-color) !important;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+#btn-cerrar-filtros:hover {
+    color: #6d5f4d !important;
+    transform: scale(1.1);
+}
+
+/* --- PANEL DE CREACIÓN / EDICIÓN --- */
+#panel-creacion {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--accent-light) !important;
     border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    margin: 2rem auto;
+    padding: 2rem;
+    max-width: 1000px;
+}
+
+#panel-creacion h2 {
+    text-align: center;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+}
+
+fieldset {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    background: #ffffff;
+}
+
+legend {
+    color: var(--accent-color);
+    font-weight: bold;
+    font-size: 1.1rem;
+    padding: 0 0.5rem;
+}
+
+/* --- SIDEBAR DE FILTROS --- */
+#sidebar-filtros {
+    background: var(--card-bg) !important;
+    border-left: 2px solid var(--accent-light);
+}
+
+#sidebar-filtros h3 {
+    color: var(--accent-color);
+    font-size: 1.4rem;
+}
+
+/* --- DISEÑO NUMISMÁTICO PROFESIONAL (TARJETAS) --- */
+.tarjeta-moneda {
+    background: #FCFBF9; 
+    border-radius: 8px;
+    border: 1px solid #E5E0D8;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     display: flex;
     flex-direction: column;
+    position: relative;
+    cursor: pointer;
+}
+
+.tarjeta-moneda:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px -3px rgba(0, 0, 0, 0.1);
+    border-color: #C5B79F; 
 }
 
 .imagenes-container {
+    padding: 1.5rem 1rem 0.5rem 1rem;
     display: flex;
-    justify-content: space-around;
-    padding: 1rem;
-    background-color: #fafafa;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.img-moneda {
-    width: 130px;
-    height: 130px;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 1px solid var(--border-color);
-    background-color: #e2e8f0;
-}
-
-.info-container {
-    padding: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-}
-
-.cabecera-tarjeta {
-    display: flex;
-    justify-content: space-between;
+    gap: 1rem;
+    justify-content: center;
     align-items: center;
 }
 
-.cabecera-tarjeta h2 {
-    font-size: 1.2rem;
-    margin: 0;
+.img-moneda-recorte {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover; 
+    border: 2px solid #8C7B65; 
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease;
 }
 
-.badge-estado {
-    background-color: var(--badge-bg);
-    color: var(--accent);
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 0.85rem;
+.img-placeholder {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 2px dashed #C5B79F;
+    background-color: #FCFBF9;
+    color: #8C7B65;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.75rem;
+    font-family: 'Georgia', serif;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+.img-moneda-recorte:hover {
+    transform: scale(1.05);
+}
+
+.info-container {
+    padding: 1rem 1.5rem 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    text-align: center; 
+}
+
+.cabecera-tarjeta h2 {
+    font-family: 'Georgia', 'Times New Roman', serif; 
+    font-size: 1.3rem;
+    color: #2C3E50;
+    margin: 0 0 0.5rem 0;
+    font-weight: normal;
 }
 
 .detalle-secundario {
-    color: var(--text-secondary);
+    color: #7F8C8D;
     font-size: 0.9rem;
-    margin: 0.35rem 0 1rem 0;
+    margin-bottom: 1rem;
+    font-style: italic; 
 }
 
 .especificaciones {
     display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8rem;
     font-size: 0.85rem;
+    color: #34495E;
     margin-bottom: 1rem;
-}
-
-.notas {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    font-style: italic;
-    flex-grow: 1;
-    margin-bottom: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #E5E0D8;
 }
 
 .pie-tarjeta {
+    margin-top: auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid var(--border-color);
-    padding-top: 0.75rem;
-    font-size: 0.85rem;
-}
-
-.precio {
-    font-weight: bold;
-    color: #2e7d32;
-    font-size: 1.1rem;
 }
 
 .id-tag {
-    color: var(--text-secondary);
     font-family: monospace;
-}
-
-.filtros-container {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 1rem;
-}
-
-.btn-filtro {
-    background-color: var(--badge-bg);
-    border: 1px solid var(--border-color);
-    padding: 0.4rem 0.9rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.btn-filtro.activo, .btn-filtro:hover {
-    background-color: var(--accent);
-    color: white;
-    border-color: var(--accent);
-}
-
-.sin-resultados {
-    grid-column: 1 / -1;
-    text-align: center;
-    color: var(--text-secondary);
-    padding: 2rem;
-    font-style: italic;
+    color: #95A5A6;
+    font-size: 0.75rem;
 }
 
 .btn-eliminar {
@@ -166,18 +268,18 @@ h1 {
     border: none;
     cursor: pointer;
     font-size: 1.1rem;
-    padding: 0.2rem;
-    transition: transform 0.2s;
+    opacity: 0.5;
+    transition: opacity 0.2s;
 }
 
 .btn-eliminar:hover {
-    transform: scale(1.2);
+    opacity: 1;
 }
 
 /* --- RESPONSIVE DESIGN (Móviles) --- */
 @media (max-width: 768px) {
     #galeria {
-        grid-template-columns: 1fr; /* 1 sola columna en móviles */
+        grid-template-columns: 1fr;
         gap: 1rem;
     }
     
@@ -193,7 +295,7 @@ h1 {
     }
     
     #form-nueva-moneda {
-        grid-template-columns: 1fr; /* Formulario en 1 columna */
+        grid-template-columns: 1fr; 
     }
 }
 
@@ -204,14 +306,12 @@ h1 {
 }
 
 .img-moneda:hover {
-    transform: scale(1.05); /* Pequeño efecto al pasar el ratón */
+    transform: scale(1.05);
 }
 
-/* El fondo oscuro que aparece al ampliar */
 #lightbox {
     display: none;
     position: fixed;
-    z-index: 1000;
     left: 0;
     top: 0;
     width: 100vw;
@@ -222,6 +322,7 @@ h1 {
     align-items: center;
     opacity: 0;
     transition: opacity 0.3s ease;
+    z-index: 3000 !important; /* Capa superior absoluta */
 }
 
 #lightbox.activo {

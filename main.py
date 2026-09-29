@@ -50,7 +50,7 @@ def db_a_json(pieza):
         },
         "tecnica": {
             "material": pieza.material, "peso_g": pieza.peso_g,
-            "diametro_mm": pieza.diametro_mm, "numero_serie": pieza.numero_serie
+            "diametro_mm": pieza.diametro_mm, "dimensiones": pieza.dimensiones, "numero_serie": pieza.numero_serie
         },
         "coleccionismo": { "estado": pieza.estado },
         "adquisicion": { "precio_eur": pieza.precio_eur },
@@ -66,7 +66,9 @@ def json_a_db(item: dict):
         ceca=item.get("identificacion", {}).get("ceca"), motivo=item.get("identificacion", {}).get("motivo"),
         fecha_emision=item.get("identificacion", {}).get("fecha_emision"),
         material=item.get("tecnica", {}).get("material"), peso_g=item.get("tecnica", {}).get("peso_g"),
-        diametro_mm=item.get("tecnica", {}).get("diametro_mm"), numero_serie=item.get("tecnica", {}).get("numero_serie"),
+        diametro_mm=item.get("tecnica", {}).get("diametro_mm"), 
+        dimensiones=item.get("tecnica", {}).get("dimensiones"),
+        numero_serie=item.get("tecnica", {}).get("numero_serie"),
         estado=item.get("coleccionismo", {}).get("estado"), precio_eur=item.get("adquisicion", {}).get("precio_eur", 0.0),
         img_anverso=item.get("multimedia", {}).get("img_anverso"), img_reverso=item.get("multimedia", {}).get("img_reverso"),
         notas=item.get("notas")
@@ -125,15 +127,32 @@ async def subir_imagen(file: UploadFile = File(...), token: dict = Depends(verif
         return {"error": str(e)}
 
 
-@app.post("/api/monedas")
-async def guardar_moneda(moneda: dict, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
-    nueva_pieza = json_a_db(moneda)
+@app.post("/api/piezas")
+async def guardar_pieza(pieza_dict: dict, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    nueva_pieza = json_a_db(pieza_dict)
     existente = db.query(models.Pieza).filter(models.Pieza.id == nueva_pieza.id).first()
     if existente:
         raise HTTPException(status_code=400, detail="Ya existe una pieza con ese ID")
     db.add(nueva_pieza)
     db.commit()
     return {"mensaje": "Pieza guardada en la base de datos"}
+
+@app.put("/api/piezas/{pieza_id}")
+async def actualizar_pieza(pieza_id: str, pieza_dict: dict, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    existente = db.query(models.Pieza).filter(models.Pieza.id == pieza_id).first()
+    if not existente:
+        raise HTTPException(status_code=404, detail="Pieza no encontrada")
+    
+    # Transformamos el JSON entrante al modelo de base de datos
+    pieza_actualizada = json_a_db(pieza_dict)
+    
+    # La forma más limpia en SQLAlchemy para evitar conflictos de relaciones anidadas
+    # es borrar el registro antiguo y guardar el nuevo con el mismo ID
+    db.delete(existente)
+    db.add(pieza_actualizada)
+    db.commit()
+    
+    return {"mensaje": "Pieza actualizada correctamente"}
 
 # --- FUNCIÓN AUXILIAR PARA BORRAR DE LA NUBE ---
 def borrar_imagen_cloudinary(url: str):

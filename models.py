@@ -23,6 +23,7 @@ class Pieza(Base):
     material = Column(String, default="Desconocido")
     peso_g = Column(Float, nullable=True)
     diametro_mm = Column(Float, nullable=True)
+    dimensiones = Column(String, nullable=True)
     numero_serie = Column(String, nullable=True)
     
     # Coleccionismo y Adquisición

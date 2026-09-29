@@ -7,30 +7,156 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <header>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h1>🏛️ Colección Numismática</h1>
-            <button id="btn-login" class="btn-filtro" style="background-color: var(--text-primary); color: white;">🔒 Modo Admin</button>
+    <header style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: var(--card-bg); box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-wrap: wrap; gap: 1rem;">
+        <h1 style="margin: 0; font-size: 1.5rem;">Mi Colección</h1>
+        
+        <!-- BARRA DE BÚSQUEDA RÁPIDA -->
+        <div style="flex-grow: 1; max-width: 500px; display: flex; gap: 0.5rem;">
+            <input type="text" id="in-busqueda" placeholder="Buscar (ej. duro, Franco, 1953)..." style="width: 100%; padding: 0.6rem; border-radius: 4px; border: 1px solid var(--border-color);">
+        </div>
+
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <button id="btn-toggle-filtros" style="padding: 0.6rem 1rem; border-radius: 4px; background: #e2e8f0; border: none; cursor: pointer; font-weight: bold;">⚙️ Filtros</button>
+            <button id="btn-login" style="padding: 0.6rem 1rem; border-radius: 4px; border: none; cursor: pointer; font-weight: bold;">🔒 Modo Admin</button>
         </div>
     </header>
+
+    <!-- SIDEBAR DE FILTROS (Oculto por defecto a la derecha) -->
+    <aside id="sidebar-filtros" style="position: fixed; right: -350px; top: 0; width: 350px; box-sizing: border-box; height: 100vh; background: var(--card-bg, #fff); box-shadow: -4px 0 15px rgba(0,0,0,0.2); transition: right 0.3s ease; padding: 1.5rem; z-index: 1000; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+            <h3 style="margin: 0;">Filtros Avanzados</h3>
+            <button id="btn-cerrar-filtros" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; font-weight: bold;">✖</button>
+        </div>
+        
+        <div style="display: grid; gap: 1rem;">
+            <div>
+                <label style="display: block; margin-bottom: 0.3rem; font-weight: bold; color: var(--accent-color);">Ordenar por:</label>
+                <select id="filtro-orden" style="width: 100%; padding: 0.5rem;">
+                    <option value="ano-asc">Año (Antiguo → Reciente)</option>
+                    <option value="ano-desc">Año (Reciente → Antiguo)</option>
+                    <option value="pais-asc">País (A → Z)</option>
+                    <option value="valor-asc">País (Z → A)</option>
+                    <option value="id-asc">ID / Referencia</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.3rem;">Tipo de Pieza:</label>
+                <select id="filtro-tipo" style="width: 100%; padding: 0.5rem;">
+                    <option value="todos">Todos</option>
+                    <option value="moneda">Monedas</option>
+                    <option value="billete">Billetes</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.3rem;">País:</label>
+                <input type="text" id="filtro-pais" placeholder="Ej. España" style="width: 100%; padding: 0.5rem;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.3rem;">Estado de Conservación:</label>
+                <select id="filtro-estado" style="width: 100%; padding: 0.5rem;">
+                    <option value="todos">Todos</option>
+                    <option value="SC">SC (Sin Circular)</option>
+                    <option value="EBC">EBC (Excelente)</option>
+                    <option value="MBC">MBC (Muy Buena)</option>
+                    <option value="BC">BC (Buena)</option>
+                    <option value="RC">RC (Regular)</option>
+                </select>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.3rem;">Año (Desde):</label>
+                    <input type="number" id="filtro-ano-min" placeholder="1870" style="width: 100%; padding: 0.5rem;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.3rem;">Año (Hasta):</label>
+                    <input type="number" id="filtro-ano-max" placeholder="2001" style="width: 100%; padding: 0.5rem;">
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.3rem;">Precio min (€):</label>
+                    <input type="number" id="filtro-precio-min" placeholder="0" style="width: 100%; padding: 0.5rem;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.3rem;">Precio max (€):</label>
+                    <input type="number" id="filtro-precio-max" placeholder="500" style="width: 100%; padding: 0.5rem;">
+                </div>
+            </div>
+            <button id="btn-aplicar-filtros" style="padding: 0.8rem; background: #2b6cb0; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 1rem; font-weight: bold;">Aplicar Filtros</button>
+            <button id="btn-limpiar-filtros" style="padding: 0.6rem; background: transparent; border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;">Limpiar Todo</button>
+        </div>
+    </aside>
     
     <main>
         <section id="panel-creacion" style="display: none; background: var(--card-bg); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid var(--border-color);">
-            <h2>➕ Añadir Nueva Moneda</h2>
-            <form id="form-nueva-moneda" style="display: grid; gap: 1rem; grid-template-columns: 1fr 1fr;">
-                <input type="text" id="in-id" placeholder="ID (ej. ESP-1980-5PTA)" required>
-                <input type="text" id="in-valor" placeholder="Valor Facial (ej. 5 Pesetas)" required>
-                <input type="number" id="in-ano" placeholder="Año visible (ej. 1980)" required>
-                <input type="number" step="0.01" id="in-precio" placeholder="Precio de compra (€)" required>
+            <h2>➕ Añadir Nueva Pieza</h2>
+            <form id="form-nueva-moneda" style="display: grid; gap: 1rem; margin-top: 1rem;">
                 
-                <div style="grid-column: 1 / -1;">
-                    <label style="font-size: 0.9rem; color: var(--text-secondary);">Foto Anverso (jpg/png):</label>
-                    <input type="file" id="in-foto-anv" accept="image/png, image/jpeg" required>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label>Tipo de Pieza:</label>
+                        <select id="in-tipo" required style="width: 100%; padding: 0.5rem;">
+                            <option value="moneda">Moneda</option>
+                            <option value="billete">Billete</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>ID / Código único:</label>
+                        <input type="text" id="in-id" required placeholder="Ej: ESP-1953-250" style="width: 100%; padding: 0.5rem;">
+                    </div>
                 </div>
+
+                <fieldset style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                    <legend>Identificación</legend>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                        <input type="text" id="in-pais" placeholder="País" required>
+                        <input type="text" id="in-epoca" placeholder="Época (Ej: Estado Español)" required>
+                        <input type="text" id="in-valor" placeholder="Valor Facial (Ej: 2,50 Pesetas)" required>
+                        <input type="number" id="in-ano" placeholder="Año visible" required>
+                        <input type="text" id="in-ceca" placeholder="Ceca / Marca">
+                        <input type="text" id="in-motivo" placeholder="Motivo (Ej: Busto de Franco / Cervantes)">
+                    </div>
+                </fieldset>
+
+                <fieldset style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                    <legend>Técnica y Coleccionismo</legend>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem;">
+                        <input type="text" id="in-material" placeholder="Material (Ej: Cobre)">
+                        <input type="number" id="in-peso" step="0.01" placeholder="Peso (g)">
+                        <input type="number" id="in-diametro" step="0.1" placeholder="Diámetro (mm)">
+                        <input type="text" id="in-dimensiones" placeholder="Dimensiones (Ej: 120x60 mm)" style="display: none;">
+                        <input type="text" id="in-serie" placeholder="Nº de Serie" style="display: none;">
+                        <select id="in-estado" required>
+                            <option value="SC">SC (Sin Circular)</option>
+                            <option value="EBC">EBC (Excelente)</option>
+                            <option value="MBC" selected>MBC (Muy Buena)</option>
+                            <option value="BC">BC (Buena)</option>
+                            <option value="RC">RC (Regular)</option>
+                        </select>
+                        <input type="number" id="in-precio" step="0.01" placeholder="Precio Adquisición (€)" required>
+                    </div>
+                </fieldset>
+
+                <fieldset style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                    <legend>Fotografías</legend>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem;">Anverso:</label>
+                            <input type="file" id="in-foto-anv" accept="image/*" capture="environment">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem;">Reverso (Opcional):</label>
+                            <input type="file" id="in-foto-rev" accept="image/*" capture="environment">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <textarea id="in-notas" rows="2" placeholder="Notas adicionales o historial..." style="width: 100%; padding: 0.5rem;"></textarea>
                 
-                <button type="submit" style="grid-column: 1 / -1; background: var(--accent); color: white; padding: 0.75rem; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
-                    Procesar y Guardar Pieza
-                </button>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button type="submit" style="flex: 2; padding: 0.8rem; font-weight: bold; cursor: pointer;">Guardar Pieza</button>
+                    <button type="button" id="btn-cancelar-edicion" onclick="cancelarEdicion()" style="display: none; flex: 1; padding: 0.8rem; background: #e2e8f0; color: #2C3E50; border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; font-weight: bold;">✕ Cancelar</button>
+                </div>
             </form>
         </section>
         <section id="galeria" class="grid-container">
@@ -44,6 +170,16 @@
     <div id="lightbox">
         <button id="lightbox-cerrar">&times;</button>
         <img id="lightbox-img" src="" alt="Imagen ampliada">
+    </div>
+
+    <!-- MODAL DE DETALLES DE PIEZA -->
+    <div id="modal-detalles" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; padding: 1rem; box-sizing: border-box;">
+        <div style="background: var(--card-bg, #FCFBF9); width: 100%; max-width: 900px; max-height: 90vh; border-radius: 8px; overflow-y: auto; position: relative; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <button id="btn-cerrar-modal" style="position: absolute; top: 1rem; right: 1rem; background: transparent; color: #2C3E50; border: none; font-size: 1.5rem; cursor: pointer; font-weight: bold; z-index: 10;">✖</button>
+            <div id="contenido-detalles" style="padding: 2.5rem;">
+                <!-- El contenido se inyecta dinámicamente por JS -->
+            </div>
+        </div>
     </div>
 </body>
 </html>
