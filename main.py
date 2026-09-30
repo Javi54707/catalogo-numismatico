@@ -34,6 +34,38 @@ cloudinary.config(
 
 app = FastAPI(title="API Catálogo Numismático")
 
+from fastapi.responses import Response
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    # Dibujamos un SVG de una moneda dorada al vuelo
+    svg_content = """
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" fill="#C5B79F" stroke="#8c7a6b" stroke-width="4"/>
+        <circle cx="50" cy="50" r="38" fill="none" stroke="#8c7a6b" stroke-width="2" stroke-dasharray="4 4"/>
+        <text x="50" y="68" font-family="Georgia, serif" font-size="50" font-weight="bold" fill="#6d5f4d" text-anchor="middle">N</text>
+    </svg>
+    """
+    return Response(content=svg_content, media_type="image/svg+xml")
+
+@app.get("/manifest.json", include_in_schema=False)
+async def get_manifest():
+    return {
+        "name": "Catálogo Numismático",
+        "short_name": "Numismática",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#FCFBF9",
+        "theme_color": "#6d5f4d",
+        "icons": [
+            {
+                "src": "/favicon.ico",
+                "sizes": "512x512",
+                "type": "image/svg+xml"
+            }
+        ]
+    }
+
 def get_db():
     db = SessionLocal()
     try:

@@ -299,6 +299,43 @@ legend {
     }
 }
 
+/* --- AJUSTES RESPONSIVE PARA MÓVILES --- */
+@media (max-width: 768px) {
+    /* 1. Evitar que el panel principal desborde la pantalla */
+    #panel-creacion {
+        width: 92% !important;
+        margin: 1rem auto !important;
+        padding: 1.5rem 1rem !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden;
+    }
+
+    /* 2. El truco mágico: domar al fieldset para que se deje comprimir */
+    fieldset {
+        min-width: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 1rem !important;
+    }
+
+    /* 3. Romper CUALQUIER flexbox o grid a una sola columna vertical */
+    #form-nueva-moneda div[style*="display: grid"],
+    #form-nueva-moneda div[style*="display: flex"] {
+        grid-template-columns: 1fr !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+
+    /* 4. Obligar a los campos a no pasarse del 100% del ancho */
+    #form-nueva-moneda input, 
+    #form-nueva-moneda select, 
+    #form-nueva-moneda textarea {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+}
+
 /* --- EFECTO LIGHTBOX (Zoom de imágenes) --- */
 .img-moneda {
     cursor: zoom-in;

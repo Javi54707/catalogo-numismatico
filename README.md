@@ -1,32 +1,54 @@
-# Catálogo Numismático
+# Gestor de Colecciones Numismáticas
 
-Repositorio de datos estructurados para la gestión, catalogación y control de inventario de una colección numismática y notafílica.
+Aplicación web full-stack diseñada para la catalogación, gestión y visualización de colecciones de monedas y billetes. El proyecto prioriza una arquitectura de datos escalable, un rendimiento óptimo y una interfaz de usuario limpia y adaptativa.
 
-Este proyecto sustituye las hojas de cálculo convencionales por una arquitectura basada en archivos JSON, permitiendo un tipado de datos estricto, control de versiones semántico y sentando las bases para una futura integración con interfaces web o análisis de datos.
+## Arquitectura y Tecnologías
 
-## Arquitectura de Datos
+* **Backend:** Python, FastAPI.
+* **Base de Datos:** PostgreSQL, SQLAlchemy (ORM).
+* **Frontend:** HTML5, CSS3 (Grid/Flexbox), JavaScript Vanilla.
+* **Almacenamiento de Medios:** API de Cloudinary (conversión al vuelo a WebP y redimensionamiento).
 
-La base de datos se estructura en entidades lógicas independientes para mantener la cohesión de los esquemas:
+## Características Técnicas Destacadas
 
-* `data/monedas.json`: Registros con atributos físicos y de acuñación (peso, aleación, diámetro, ceca, conservación).
-* `data/billetes.json`: Registros enfocados en variables notafílicas (números de serie, firmas, planchas, emisiones).
+* **Modelo de Datos Heterogéneo (JSONB):** Implementación de herencia de tabla única (Single-Table Inheritance) utilizando columnas `JSONB` en PostgreSQL. Esto permite almacenar entidades con atributos muy dispares (monedas con diámetro y peso vs. billetes con ancho, alto y número de serie) en la misma tabla estructural sin generar un exceso de columnas nulas.
+* **Algoritmo de Ordenación en Cascada (Multi-level Sort):** Sistema de ordenamiento en el cliente que resuelve empates técnicos evaluando secuencialmente múltiples dimensiones de la pieza. El orden numismático por defecto evalúa: País -> Valor Matemático -> Año de acuñación -> ID de referencia.
+* **Abstracción del Valor Numérico:** Separación estricta entre la representación visual de la divisa (ej. "50 Céntimos") y su valor matemático absoluto en la base de datos (0.5), garantizando una ordenación algorítmica precisa sin necesidad de hardcodear diccionarios de conversión de monedas históricas.
+* **Renderizado y Paginación Dinámica:** Paginación gestionada íntegramente en el cliente, con un cálculo de elementos por página que reacciona dinámicamente al tamaño del viewport. Incluye inyección automática de separadores de sección al detectar cambios de agrupación (país o año).
+* **Diseño Responsivo:** Interfaz adaptada a dispositivos móviles mediante CSS puro, forzando la reestructuración de la cuadrícula del formulario y la galería sin depender de frameworks externos.
 
-## Pipeline de Procesamiento de Imágenes
+## Requisitos Previos
 
-Para optimizar el rendimiento del repositorio y evitar la subida de archivos binarios pesados al control de versiones, los recursos fotográficos originales en alta resolución se excluyen sistemáticamente mediante `.gitignore`. 
+* Python 3.8 o superior.
+* Servidor de PostgreSQL.
+* Credenciales de la API de Cloudinary.
 
-El repositorio incluye un script de automatización en Python que procesa las imágenes en crudo, aplicando un redimensionamiento y compresión iterativa hacia el formato WebP.
+## Configuración e Instalación
 
-### Instrucciones de ejecución
+1. Clonar el repositorio.
+2. Instalar las dependencias del proyecto:
 
-1. Depositar las fotografías originales (`.jpg`, `.png`) en el directorio local no rastreado: `assets/raw_img/`.
-2. Instalar las dependencias del entorno:
-   pip install Pillow
-3. Ejecutar el procesador:
-    python scripts/optimizar_imagenes.py
-4. Las versiones .webp optimizadas se generarán en el directorio público assets/img/, listas para ser referenciadas en los esquemas JSON y versionadas en Git.
+```bash
+   pip install -r requirements.txt
+   ```
 
-## Stack Tecnológico
-Almacenamiento de Datos: JSON
-Automatización de Assets: Python 3 (Pillow)
-Control de Versiones: Git & GitHub
+3. Crear un archivo `.env` en el directorio raíz con la siguiente estructura:
+
+```text
+   DATABASE\_URL=postgresql://usuario:password@host/nombre\_bd
+   CLOUDINARY\_CLOUD\_NAME=tu\_cloud\_name
+   CLOUDINARY\_API\_KEY=tu\_api\_key
+   CLOUDINARY\_API\_SECRET=tu\_api\_secret
+   SECRET\_TOKEN=contrasena\_acceso\_admin
+   ```
+
+## Ejecución en Entorno Local
+
+Para levantar el servidor de desarrollo con recarga automática, ejecutar:
+
+```bash
+uvicorn main:app --reload
+```
+
+La aplicación se servirá por defecto en `http://localhost:8000`.
+

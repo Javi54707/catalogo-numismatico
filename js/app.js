@@ -7,6 +7,72 @@ document.addEventListener('DOMContentLoaded', () => {
     configurarAuth();
 });
 
+// --- SISTEMA DE MENSAJES PERSONALIZADO ---
+function mostrarMensaje(titulo, texto, tipo = 'alerta') {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('modal-sistema');
+        const input = document.getElementById('modal-sistema-input');
+        const btnCancelar = document.getElementById('btn-modal-cancelar');
+        const btnAceptar = document.getElementById('btn-modal-aceptar');
+        
+        document.getElementById('modal-sistema-titulo').textContent = titulo;
+        document.getElementById('modal-sistema-texto').textContent = texto;
+        
+        // Configuramos los elementos visibles según el tipo de ventana
+        const passContainer = document.getElementById('modal-password-container');
+        passContainer.style.display = tipo === 'password' ? 'block' : 'none';
+        input.value = '';
+        btnCancelar.style.display = (tipo === 'confirmacion' || tipo === 'password') ? 'block' : 'none';
+        
+        const limpiar = () => {
+            modal.style.display = 'none';
+            btnAceptar.removeEventListener('click', onAceptar);
+            btnCancelar.removeEventListener('click', onCancelar);
+        };
+
+        const onAceptar = () => {
+            limpiar();
+            if (tipo === 'password') resolve(input.value);
+            else resolve(true);
+        };
+        const onCancelar = () => {
+            limpiar();
+            if (tipo === 'password') resolve(null);
+            else resolve(false);
+        };
+
+        btnAceptar.addEventListener('click', onAceptar);
+        btnCancelar.addEventListener('click', onCancelar);
+        
+        modal.style.display = 'flex';
+        if (tipo === 'password') input.focus();
+    });
+}
+
+const trazadoOjoAbierto = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>`;
+const trazadoOjoTachado = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>`;
+
+// DELEGACIÓN DE EVENTOS: Escuchamos en todo el documento
+document.addEventListener('click', (e) => {
+    // Buscamos si el clic se hizo dentro de nuestro botón del ojo
+    const btnOjo = e.target.closest('#btn-toggle-password');
+    
+    // Si no han hecho clic en el ojo, ignoramos y salimos
+    if (!btnOjo) return;
+    
+    e.preventDefault();
+    const input = document.getElementById('modal-sistema-input');
+    const icono = document.getElementById('icono-ojo');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icono.innerHTML = trazadoOjoTachado;
+    } else {
+        input.type = 'password';
+        icono.innerHTML = trazadoOjoAbierto;
+    }
+});
+
 // --- AUTENTICACIÓN ---
 function configurarAuth() {
     const btnLogin = document.getElementById('btn-login');
@@ -26,7 +92,7 @@ function configurarAuth() {
         }
 
         // Si no estamos logueados, pedimos contraseña
-        const pass = prompt("Introduce la contraseña maestra:");
+        const pass = await mostrarMensaje("Acceso Restringido", "Introduce la contraseña:", "password");
         if (!pass) return;
 
         try {
@@ -42,7 +108,7 @@ function configurarAuth() {
                 actualizarInterfazAdmin();
                 renderizarCatalogo(coleccionGlobal); // Recargar para mostrar papeleras
             } else {
-                alert("❌ Contraseña incorrecta");
+                await mostrarMensaje("Error", "La contraseña es incorrecta.", "alerta");
             }
         } catch (error) {
             console.error("Error de login:", error);
@@ -426,7 +492,10 @@ document.getElementById('form-nueva-moneda').addEventListener('submit', async (e
     e.preventDefault();
     
     const token = getToken(); // Usamos la función correcta
-    if (!token) return alert("Debes iniciar sesión");
+    if (!token) {
+        await mostrarMensaje("Atención", "Debes iniciar sesión para guardar piezas.");
+        return;
+    }
 
     const btnSubmit = e.target.querySelector('button[type="submit"]') || e.target.querySelector('button');
     btnSubmit.textContent = "⏳ Subiendo fotos y guardando...";
@@ -502,17 +571,17 @@ document.getElementById('form-nueva-moneda').addEventListener('submit', async (e
         });
 
         if (resGuardar.ok) {
-            alert(idEdicionActual ? "✅ Pieza actualizada con éxito" : "✅ Pieza guardada con éxito");
+            await mostrarMensaje("Catálogo Actualizado", idEdicionActual ? "Pieza actualizada con éxito." : "Pieza guardada con éxito.");
             e.target.reset(); 
             window.location.reload(); 
         } else {
             const errData = await resGuardar.json();
-            alert("❌ Error al guardar: " + errData.detail);
+            await mostrarMensaje("Error al guardar", errData.detail);
             if (resGuardar.status === 401) throw new Error("Sesión caducada");
         }
 
     } catch (error) {
-        alert("❌ Error: " + error.message);
+        await mostrarMensaje("Error Inesperado", error.message);
         if (error.message.includes("caducada")) {
             localStorage.removeItem('numismatica_token');
             actualizarInterfazAdmin();
@@ -525,9 +594,13 @@ document.getElementById('form-nueva-moneda').addEventListener('submit', async (e
 
 async function eliminarPieza(id, tipo) {
     const token = getToken();
-    if (!token) return alert("Debes iniciar sesión");
+    if (!token) {
+        await mostrarMensaje("Atención", "Debes iniciar sesión para poder eliminar piezas.");
+        return;
+    }
 
-    if (!confirm(`¿Eliminar la pieza con ID: ${id}?`)) return;
+    const seguro = await mostrarMensaje("Eliminar Pieza", `¿Eliminar permanentemente la pieza con ID: ${id}?`, "confirmacion");
+    if (!seguro) return;
 
     try {
         const endpoint = tipo === 'moneda' ? `/api/monedas/${id}` : `/api/billetes/${id}`;
@@ -543,7 +616,7 @@ async function eliminarPieza(id, tipo) {
         }
     } catch (error) {
         console.error(error);
-        alert(`❌ ${error.message}`);
+        await mostrarMensaje("Error al eliminar", error.message);
         if (error.message === 'Sesión caducada') {
             localStorage.removeItem('numismatica_token');
             actualizarInterfazAdmin();
