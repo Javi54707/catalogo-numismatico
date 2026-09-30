@@ -324,7 +324,7 @@ function configurarFiltros() {
     // 2. Motor unificado de filtrado y ordenación
     function aplicarFiltros() {
         const textoLibre = inBusqueda.value.toLowerCase().trim();
-        const tipo = document.getElementById('filtro-tipo').value;
+        const tipo = document.getElementById('filtro-tipo').value.toLowerCase();
         const pais = document.getElementById('filtro-pais').value.toLowerCase().trim();
         const estado = document.getElementById('filtro-estado').value;
         const anoMin = parseInt(document.getElementById('filtro-ano-min').value) || -Infinity;
@@ -338,7 +338,7 @@ function configurarFiltros() {
             const campoBusqueda = `${item.id} ${item.identificacion.pais || ''} ${item.identificacion.epoca || ''} ${item.identificacion.valor_facial} ${item.identificacion.motivo || ''} ${item.identificacion.ano_visible || ''} ${item.identificacion.ceca || ''} ${item.notas || ''}`.toLowerCase();
             const pasaTexto = campoBusqueda.includes(textoLibre);
 
-            const pasaTipo = (tipo === 'todos') || (item.tipo === tipo);
+            const pasaTipo = (tipo === 'todos') || (item.tipo && item.tipo.toLowerCase() === tipo);
             const pasaPais = !pais || (item.identificacion.pais || '').toLowerCase().includes(pais);
             const pasaEstado = (estado === 'todos') || (item.coleccionismo.estado === estado);
             
