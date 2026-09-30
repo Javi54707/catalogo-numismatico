@@ -221,14 +221,25 @@ async def eliminar_pieza(item_id: str, db: Session = Depends(get_db), token: dic
     if not pieza:
         raise HTTPException(status_code=404, detail="Pieza no encontrada")
     
-    # 1. Destruimos las imágenes en la nube
-    borrar_imagen_cloudinary(pieza.img_anverso)
-    borrar_imagen_cloudinary(pieza.img_reverso)
+    # 1. Destruimos las imágenes en la nube de forma SEGURA
+    try:
+        if pieza.img_anverso:
+            borrar_imagen_cloudinary(pieza.img_anverso)
+        if pieza.img_reverso:
+            borrar_imagen_cloudinary(pieza.img_reverso)
+    except Exception as e:
+        print(f"Aviso: Fallo al borrar imagen en Cloudinary para {item_id}: {e}")
+        # No bloqueamos el borrado de la base de datos si Cloudinary falla
     
     # 2. Borramos el registro de la base de datos local
-    db.delete(pieza)
-    db.commit()
-    return {"mensaje": "Pieza y fotos asociadas eliminadas correctamente"}
+    try:
+        db.delete(pieza)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error interno al borrar en la base de datos")
+        
+    return {"mensaje": "Pieza eliminada correctamente"}
 
 @app.on_event("startup")
 def migrar_datos_antiguos():

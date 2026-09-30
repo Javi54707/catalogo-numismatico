@@ -439,7 +439,7 @@ function configurarFiltros() {
 // --- INTELIGENCIA DEL FORMULARIO ---
 document.addEventListener('DOMContentLoaded', () => {
     const inTipo = document.getElementById('in-tipo');
-    const inCeca = document.getElementById('in-ceca'); // Ahora atacamos el input directo
+    const inCeca = document.getElementById('in-ceca'); 
     
     const inPeso = document.getElementById('in-peso');
     const inDiametro = document.getElementById('in-diametro');
@@ -449,24 +449,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (inTipo) {
         const aplicarLogicaFormulario = () => {
-            const esMoneda = inTipo.value === 'moneda';
+            // Pasamos el valor a minúsculas por seguridad y comprobamos si es moneda o medalla
+            const tipoSeleccionado = inTipo.value.toLowerCase();
+            const esMonedaOMedalla = tipoSeleccionado === 'moneda' || tipoSeleccionado === 'medalla';
             
             // 1. Placeholder dinámico en vez de etiqueta
-            if (inCeca) inCeca.placeholder = esMoneda ? 'Ceca / Marca (Ej. Madrid)' : 'Impresor (Ej. FNMT)';
+            if (inCeca) inCeca.placeholder = esMonedaOMedalla ? 'Ceca / Marca (Ej. Madrid)' : 'Impresor (Ej. FNMT)';
             
             // 2. Mostrar/Ocultar los campos directamente
-            if (inPeso) inPeso.style.display = esMoneda ? 'block' : 'none';
-            if (inDiametro) inDiametro.style.display = esMoneda ? 'block' : 'none';
+            if (inPeso) inPeso.style.display = esMonedaOMedalla ? 'block' : 'none';
+            if (inDiametro) inDiametro.style.display = esMonedaOMedalla ? 'block' : 'none';
             
-            if (inAncho) inAncho.style.display = esMoneda ? 'none' : 'block';
-            if (inAlto) inAlto.style.display = esMoneda ? 'none' : 'block';
-            if (inSerie) inSerie.style.display = esMoneda ? 'none' : 'block';
+            if (inAncho) inAncho.style.display = esMonedaOMedalla ? 'none' : 'block';
+            if (inAlto) inAlto.style.display = esMonedaOMedalla ? 'none' : 'block';
+            if (inSerie) inSerie.style.display = esMonedaOMedalla ? 'none' : 'block';
         };
 
         // Escuchar el cambio en el desplegable
         inTipo.addEventListener('change', aplicarLogicaFormulario);
         
-        // Ejecutarlo una vez al cargar la página por si se quedó guardado "billete" al recargar
+        // Ejecutarlo una vez al cargar la página
         aplicarLogicaFormulario();
     }
 });
@@ -864,3 +866,131 @@ function cancelarEdicion() {
     const btnCancelar = document.getElementById('btn-cancelar-edicion');
     if (btnCancelar) btnCancelar.style.display = "none";
 }
+
+// --- LÓGICA DE RECORTE DE IMÁGENES (CROPPER.JS AVANZADO) ---
+
+// Inyectamos el CSS para el círculo sin tocar el HTML
+if (!document.getElementById('css-cropper-circular')) {
+    const style = document.createElement('style');
+    style.id = 'css-cropper-circular';
+    style.innerHTML = `
+        .recorte-circular .cropper-view-box,
+        .recorte-circular .cropper-face {
+            border-radius: 50%;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+let cropperInstance = null;
+let inputArchivoActual = null; 
+
+// Función mágica para troquelar el cuadrado y hacerlo círculo con fondo transparente
+function obtenerCanvasRedondo(sourceCanvas) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    const width = sourceCanvas.width;
+    const height = sourceCanvas.height;
+
+    canvas.width = width;
+    canvas.height = height;
+    context.imageSmoothingEnabled = true;
+    context.drawImage(sourceCanvas, 0, 0, width, height);
+    
+    // Dibujamos un círculo y borramos todo lo que quede fuera de él
+    context.globalCompositeOperation = 'destination-in';
+    context.beginPath();
+    context.arc(width / 2, height / 2, Math.min(width, height) / 2, 0, 2 * Math.PI, true);
+    context.fill();
+    
+    return canvas;
+}
+
+const inputsFoto = document.querySelectorAll('input[type="file"]');
+
+inputsFoto.forEach(input => {
+    input.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        inputArchivoActual = this;
+        const reader = new FileReader();
+        
+        // ¿Es moneda o billete?
+        const tipoActual = document.getElementById('in-tipo').value.toLowerCase();
+        const esRedonda = tipoActual === 'moneda' || tipoActual === 'medalla';
+        const modal = document.getElementById('modal-cropper');
+        
+        // Activamos o desactivamos la clase CSS del círculo
+        if (esRedonda) modal.classList.add('recorte-circular');
+        else modal.classList.remove('recorte-circular');
+
+        reader.onload = (eventoLector) => {
+            const imgEl = document.getElementById('imagen-a-recortar');
+            imgEl.src = eventoLector.target.result;
+            modal.style.display = 'flex';
+            
+            if (cropperInstance) cropperInstance.destroy();
+            
+            cropperInstance = new Cropper(imgEl, {
+                aspectRatio: esRedonda ? 1 : NaN, // 1:1 para monedas, libre para billetes
+                viewMode: 2,
+                background: false
+            });
+        };
+        reader.readAsDataURL(file);
+    });
+});
+
+// EVENT DELEGATION PARA LOS BOTONES
+document.addEventListener('click', (e) => {
+    // 1. Botón Cancelar
+    if (e.target.closest('#btn-crop-cancelar')) {
+        document.getElementById('modal-cropper').style.display = 'none';
+        if (cropperInstance) cropperInstance.destroy();
+        if (inputArchivoActual) inputArchivoActual.value = ''; 
+        return;
+    }
+
+    // 2. Botón Aceptar y Recortar
+    if (e.target.closest('#btn-crop-aceptar')) {
+        if (!cropperInstance) return;
+        
+        const btnAceptar = e.target.closest('#btn-crop-aceptar');
+        const textoOriginal = btnAceptar.textContent;
+        btnAceptar.textContent = "Procesando recorte...";
+        btnAceptar.disabled = true;
+        
+        const tipoActual = document.getElementById('in-tipo').value.toLowerCase();
+        const esRedonda = tipoActual === 'moneda' || tipoActual === 'medalla';
+        
+        // Extraemos el lienzo cuadrado (Más resolución a lo ancho si es billete)
+        let canvasRecortado = cropperInstance.getCroppedCanvas({
+            width: esRedonda ? 800 : 1200,
+            height: 800
+        });
+        
+        // Si es redonda, le aplicamos el troquel circular transparente
+        if (esRedonda) {
+            canvasRecortado = obtenerCanvasRedondo(canvasRecortado);
+        }
+        
+        // Magia: PNG para conservar la transparencia del círculo, JPG para billetes (pesa menos)
+        const formato = esRedonda ? 'image/png' : 'image/jpeg';
+        const extension = esRedonda ? 'png' : 'jpg';
+
+        canvasRecortado.toBlob((blob) => {
+            const archivoRecortado = new File([blob], `recorte.${extension}`, { type: formato });
+            
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(archivoRecortado);
+            if (inputArchivoActual) inputArchivoActual.files = dataTransfer.files;
+            
+            document.getElementById('modal-cropper').style.display = 'none';
+            cropperInstance.destroy();
+            
+            btnAceptar.textContent = textoOriginal;
+            btnAceptar.disabled = false;
+        }, formato, 0.9);
+    }
+});

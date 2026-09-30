@@ -16,6 +16,8 @@ Aplicación web full-stack diseñada para la catalogación, gestión y visualiza
 * **Abstracción del Valor Numérico:** Separación estricta entre la representación visual de la divisa (ej. "50 Céntimos") y su valor matemático absoluto en la base de datos (0.5), garantizando una ordenación algorítmica precisa sin necesidad de hardcodear diccionarios de conversión de monedas históricas.
 * **Renderizado y Paginación Dinámica:** Paginación gestionada íntegramente en el cliente, con un cálculo de elementos por página que reacciona dinámicamente al tamaño del viewport. Incluye inyección automática de separadores de sección al detectar cambios de agrupación (país o año).
 * **Diseño Responsivo:** Interfaz adaptada a dispositivos móviles mediante CSS puro, forzando la reestructuración de la cuadrícula del formulario y la galería sin depender de frameworks externos.
+* **Manipulación de Canvas en el Cliente:** Integración de Cropper.js interceptando el flujo de subida mediante DataTransfer. Incluye un algoritmo propio para troquelar imágenes al vuelo mediante HTML5 Canvas, generando PNGs circulares transparentes para monedas y recortes rectangulares libres para billetes antes de enviarlos a Cloudinary.
+* **Escalabilidad del Modelo de Datos:** Expansión del catálogo para soportar Medallas Conmemorativas y Facsímiles sin alterar el esquema del backend, validando la flexibilidad de la arquitectura de tabla única con JSONB.
 
 ## Requisitos Previos
 
@@ -35,11 +37,11 @@ Aplicación web full-stack diseñada para la catalogación, gestión y visualiza
 3. Crear un archivo `.env` en el directorio raíz con la siguiente estructura:
 
 ```text
-   DATABASE\_URL=postgresql://usuario:password@host/nombre\_bd
-   CLOUDINARY\_CLOUD\_NAME=tu\_cloud\_name
-   CLOUDINARY\_API\_KEY=tu\_api\_key
-   CLOUDINARY\_API\_SECRET=tu\_api\_secret
-   SECRET\_TOKEN=contrasena\_acceso\_admin
+   DATABASE\\\_URL=postgresql://usuario:password@host/nombre\\\_bd
+   CLOUDINARY\\\_CLOUD\\\_NAME=tu\\\_cloud\\\_name
+   CLOUDINARY\\\_API\\\_KEY=tu\\\_api\\\_key
+   CLOUDINARY\\\_API\\\_SECRET=tu\\\_api\\\_secret
+   SECRET\\\_TOKEN=contrasena\\\_acceso\\\_admin
    ```
 
 ## Ejecución en Entorno Local
