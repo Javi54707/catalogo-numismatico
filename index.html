@@ -32,10 +32,10 @@
             <div>
                 <label style="display: block; margin-bottom: 0.3rem; font-weight: bold; color: var(--accent-color);">Ordenar por:</label>
                 <select id="filtro-orden" style="width: 100%; padding: 0.5rem;">
+                    <option value="pais-asc" selected>País (A → Z)</option>
+                    <option value="pais-desc">País (Z → A)</option>
                     <option value="ano-asc">Año (Antiguo → Reciente)</option>
                     <option value="ano-desc">Año (Reciente → Antiguo)</option>
-                    <option value="pais-asc">País (A → Z)</option>
-                    <option value="valor-asc">País (Z → A)</option>
                     <option value="id-asc">ID / Referencia</option>
                 </select>
             </div>
@@ -89,9 +89,8 @@
     
     <main>
         <section id="panel-creacion" style="display: none; background: var(--card-bg); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid var(--border-color);">
-            <h2>➕ Añadir Nueva Pieza</h2>
+            <h2>Añadir Nueva Pieza</h2>
             <form id="form-nueva-moneda" style="display: grid; gap: 1rem; margin-top: 1rem;">
-                
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div>
                         <label>Tipo de Pieza:</label>
@@ -106,34 +105,41 @@
                     </div>
                 </div>
 
-                <fieldset style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 4px;">
-                    <legend>Identificación</legend>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
-                        <input type="text" id="in-pais" placeholder="País" required>
-                        <input type="text" id="in-epoca" placeholder="Época (Ej: Estado Español)" required>
-                        <input type="text" id="in-valor" placeholder="Valor Facial (Ej: 2,50 Pesetas)" required>
-                        <input type="number" id="in-ano" placeholder="Año visible" required>
+                <fieldset style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <legend>Identificación Histórica</legend>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
+                        <input type="text" id="in-pais" placeholder="País (Ej. España)">
+                        <input type="text" id="in-epoca" placeholder="Época (Ej. Estado Español)">
+                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.5rem;">
+                            <input type="text" id="in-valor" placeholder="Valor (Ej. 50 Céntimos)" style="min-width: 0;">
+                            <input type="number" id="in-valor-num" placeholder="Valor Num. (Ej. 0.5)" step="0.0001" style="min-width: 0;" title="Valor matemático">
+                        </div>
+                        <input type="number" id="in-ano" placeholder="Año visible (Ej. 1953)">
                         <input type="text" id="in-ceca" placeholder="Ceca / Marca">
-                        <input type="text" id="in-motivo" placeholder="Motivo (Ej: Busto de Franco / Cervantes)">
+                        <input type="text" id="in-motivo" placeholder="Motivo principal">
                     </div>
                 </fieldset>
 
-                <fieldset style="padding: 1rem; border: 1px solid var(--border-color); border-radius: 4px;">
-                    <legend>Técnica y Coleccionismo</legend>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem;">
-                        <input type="text" id="in-material" placeholder="Material (Ej: Cobre)">
-                        <input type="number" id="in-peso" step="0.01" placeholder="Peso (g)">
-                        <input type="number" id="in-diametro" step="0.1" placeholder="Diámetro (mm)">
-                        <input type="text" id="in-dimensiones" placeholder="Dimensiones (Ej: 120x60 mm)" style="display: none;">
+                <fieldset style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <legend>Detalles Técnicos y Conservación</legend>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
+                        <input type="text" id="in-material" placeholder="Material">
+                        <input type="number" id="in-peso" placeholder="Peso (g)" step="0.01">
+                        <input type="number" id="in-diametro" placeholder="Diámetro (mm)" step="0.01">
+                        
+                        <!-- Bloque exclusivo billetes -->
+                        <input type="number" id="in-ancho" placeholder="Ancho (mm)" step="1" style="display: none;">
+                        <input type="number" id="in-alto" placeholder="Alto (mm)" step="1" style="display: none;">
                         <input type="text" id="in-serie" placeholder="Nº de Serie" style="display: none;">
-                        <select id="in-estado" required>
+                        
+                        <select id="in-estado">
+                            <option value="S/D">Estado de conservación...</option>
                             <option value="SC">SC (Sin Circular)</option>
                             <option value="EBC">EBC (Excelente)</option>
-                            <option value="MBC" selected>MBC (Muy Buena)</option>
+                            <option value="MBC">MBC (Muy Buena)</option>
                             <option value="BC">BC (Buena)</option>
                             <option value="RC">RC (Regular)</option>
                         </select>
-                        <input type="number" id="in-precio" step="0.01" placeholder="Precio Adquisición (€)" required>
                     </div>
                 </fieldset>
 
@@ -162,6 +168,9 @@
         <section id="galeria" class="grid-container">
             <!-- JavaScript inyectará las tarjetas aquí -->
         </section>
+
+        <!-- CONTENEDOR DE PAGINACIÓN -->
+        <div id="paginacion-container" style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 2rem; padding: 1rem; flex-wrap: wrap;"></div>
     </main>
 
     <script src="js/app.js"></script>

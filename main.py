@@ -93,16 +93,11 @@ def login(req: LoginRequest):
     token = jwt.encode({"sub": "admin", "exp": expiracion}, JWT_SECRET, algorithm=ALGORITHM)
     return {"access_token": token, "token_type": "bearer"}
 
-@app.get("/api/monedas")
-def obtener_monedas(db: Session = Depends(get_db)):
-    piezas = db.query(models.Pieza).filter(models.Pieza.tipo == "moneda").all()
-    return [db_a_json(p) for p in piezas]
-
-@app.get("/api/billetes")
-def obtener_billetes(db: Session = Depends(get_db)):
-    piezas = db.query(models.Pieza).filter(models.Pieza.tipo == "billete").all()
-    return [db_a_json(p) for p in piezas]
-
+@app.get("/api/piezas")
+def obtener_catalogo(db: Session = Depends(get_db)):
+    # Al usar JSONB, SQLAlchemy devuelve el diccionario perfecto automáticamente
+    piezas = db.query(models.Pieza).all()
+    return piezas
 
 # --- EL NUEVO ENDPOINT DE LA NUBE ---
 @app.post("/api/upload-imagen")
@@ -128,14 +123,27 @@ async def subir_imagen(file: UploadFile = File(...), token: dict = Depends(verif
 
 
 @app.post("/api/piezas")
-async def guardar_pieza(pieza_dict: dict, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
-    nueva_pieza = json_a_db(pieza_dict)
-    existente = db.query(models.Pieza).filter(models.Pieza.id == nueva_pieza.id).first()
+async def crear_pieza(pieza_dict: dict, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    # Comprobar si existe
+    existente = db.query(models.Pieza).filter(models.Pieza.id == pieza_dict["id"]).first()
     if existente:
-        raise HTTPException(status_code=400, detail="Ya existe una pieza con ese ID")
+        raise HTTPException(status_code=400, detail="El ID ya existe")
+
+    # Inyección directa de los bloques JSON
+    nueva_pieza = models.Pieza(
+        id=pieza_dict["id"],
+        tipo=pieza_dict["tipo"],
+        notas=pieza_dict.get("notas", ""),
+        identificacion=pieza_dict.get("identificacion", {}),
+        tecnica=pieza_dict.get("tecnica", {}),
+        coleccionismo=pieza_dict.get("coleccionismo", {}),
+        adquisicion=pieza_dict.get("adquisicion", {}),
+        multimedia=pieza_dict.get("multimedia", {})
+    )
+    
     db.add(nueva_pieza)
     db.commit()
-    return {"mensaje": "Pieza guardada en la base de datos"}
+    return {"mensaje": "Pieza guardada correctamente"}
 
 @app.put("/api/piezas/{pieza_id}")
 async def actualizar_pieza(pieza_id: str, pieza_dict: dict, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
@@ -143,15 +151,16 @@ async def actualizar_pieza(pieza_id: str, pieza_dict: dict, db: Session = Depend
     if not existente:
         raise HTTPException(status_code=404, detail="Pieza no encontrada")
     
-    # Transformamos el JSON entrante al modelo de base de datos
-    pieza_actualizada = json_a_db(pieza_dict)
+    # Actualizamos los campos directamente
+    existente.tipo = pieza_dict["tipo"]
+    existente.notas = pieza_dict.get("notas", "")
+    existente.identificacion = pieza_dict.get("identificacion", {})
+    existente.tecnica = pieza_dict.get("tecnica", {})
+    existente.coleccionismo = pieza_dict.get("coleccionismo", {})
+    existente.adquisicion = pieza_dict.get("adquisicion", {})
+    existente.multimedia = pieza_dict.get("multimedia", {})
     
-    # La forma más limpia en SQLAlchemy para evitar conflictos de relaciones anidadas
-    # es borrar el registro antiguo y guardar el nuevo con el mismo ID
-    db.delete(existente)
-    db.add(pieza_actualizada)
     db.commit()
-    
     return {"mensaje": "Pieza actualizada correctamente"}
 
 # --- FUNCIÓN AUXILIAR PARA BORRAR DE LA NUBE ---
