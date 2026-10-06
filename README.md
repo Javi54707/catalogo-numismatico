@@ -1,56 +1,51 @@
-# Gestor de Colecciones Numismáticas
+# Full-Stack Numismatic Cataloging Platform
 
-Aplicación web full-stack diseñada para la catalogación, gestión y visualización de colecciones de monedas y billetes. El proyecto prioriza una arquitectura de datos escalable, un rendimiento óptimo y una interfaz de usuario limpia y adaptativa.
+## Overview
+A high-performance, full-stack web application engineered for the comprehensive management, cataloging, and visualization of coin and banknote collections. Designed to support official numismatic cataloging systems and manage extensive historical sets (such as 20th-century Spanish pesetas), the project prioritizes a scalable data architecture, rapid client-side rendering, and a responsive, dependency-free UI.
 
-## Arquitectura y Tecnologías
+## Architecture & Technologies
+*   **Frontend:** HTML5, CSS3 (Grid/Flexbox), Vanilla JavaScript.
+*   **Backend:** Python 3, FastAPI.
+*   **Database:** PostgreSQL (Serverless via Neon), SQLAlchemy (ORM).
+*   **Media Storage & Processing:** Cloudinary API (on-the-fly WebP conversion & dynamic resizing).
+*   **Deployment:** Render (Backend/Frontend hosting).
 
-* **Backend:** Python, FastAPI.
-* **Base de Datos:** PostgreSQL, SQLAlchemy (ORM).
-* **Frontend:** HTML5, CSS3 (Grid/Flexbox), JavaScript Vanilla.
-* **Almacenamiento de Medios:** API de Cloudinary (conversión al vuelo a WebP y redimensionamiento).
+## Core Technical Features
 
-## Características Técnicas Destacadas
+*   **Heterogeneous Data Modeling (JSONB):** Implements Single-Table Inheritance using PostgreSQL `JSONB` columns. This architecture allows the system to store highly disparate entities (e.g., coins requiring diameter/weight vs. banknotes requiring serial numbers/dimensions) within the same structural table, entirely avoiding null-column bloat.
+*   **Client-Side Canvas Manipulation & Cropping:** Integrates Cropper.js by intercepting upload streams via the `DataTransfer` API. Features a custom algorithmic implementation using HTML5 Canvas to dynamically punch out transparent circular PNGs for coins and free-form rectangular crops for banknotes directly in the browser before dispatching to Cloudinary.
+*   **Multi-Level Sorting Algorithm:** A bespoke client-side sorting engine that resolves technical ties by sequentially evaluating multiple dimensions. The default numismatic pipeline evaluates: `Country -> Mathematical Value -> Minting Year -> Reference ID`.
+*   **Numerical Value Abstraction:** Enforces strict separation between the visual representation of a currency (e.g., "50 Céntimos") and its absolute mathematical value in the database (0.5). This guarantees precise algorithmic sorting without hardcoding conversion dictionaries for historical currencies.
+*   **Dynamic Pagination & Rendering:** Fully client-side pagination that dynamically recalculates elements per page based on viewport resizing. It includes an automatic injection system that renders section dividers when detecting grouping shifts (by country or year).
+*   **Responsive UI & Scalability:** The interface is built entirely with pure CSS, forcing grid restructuring without relying on heavy external frameworks like Bootstrap. The database schema is designed to effortlessly expand and support Commemorative Medals and Facsimiles without backend migrations.
 
-* **Modelo de Datos Heterogéneo (JSONB):** Implementación de herencia de tabla única (Single-Table Inheritance) utilizando columnas `JSONB` en PostgreSQL. Esto permite almacenar entidades con atributos muy dispares (monedas con diámetro y peso vs. billetes con ancho, alto y número de serie) en la misma tabla estructural sin generar un exceso de columnas nulas.
-* **Algoritmo de Ordenación en Cascada (Multi-level Sort):** Sistema de ordenamiento en el cliente que resuelve empates técnicos evaluando secuencialmente múltiples dimensiones de la pieza. El orden numismático por defecto evalúa: País -> Valor Matemático -> Año de acuñación -> ID de referencia.
-* **Abstracción del Valor Numérico:** Separación estricta entre la representación visual de la divisa (ej. "50 Céntimos") y su valor matemático absoluto en la base de datos (0.5), garantizando una ordenación algorítmica precisa sin necesidad de hardcodear diccionarios de conversión de monedas históricas.
-* **Renderizado y Paginación Dinámica:** Paginación gestionada íntegramente en el cliente, con un cálculo de elementos por página que reacciona dinámicamente al tamaño del viewport. Incluye inyección automática de separadores de sección al detectar cambios de agrupación (país o año).
-* **Diseño Responsivo:** Interfaz adaptada a dispositivos móviles mediante CSS puro, forzando la reestructuración de la cuadrícula del formulario y la galería sin depender de frameworks externos.
-* **Manipulación de Canvas en el Cliente:** Integración de Cropper.js interceptando el flujo de subida mediante DataTransfer. Incluye un algoritmo propio para troquelar imágenes al vuelo mediante HTML5 Canvas, generando PNGs circulares transparentes para monedas y recortes rectangulares libres para billetes antes de enviarlos a Cloudinary.
-* **Escalabilidad del Modelo de Datos:** Expansión del catálogo para soportar Medallas Conmemorativas y Facsímiles sin alterar el esquema del backend, validando la flexibilidad de la arquitectura de tabla única con JSONB.
+## Local Setup & Installation
 
-## Requisitos Previos
+### Prerequisites
+*   Python 3.8+
+*   PostgreSQL Server
+*   Cloudinary API Credentials
 
-* Python 3.8 o superior.
-* Servidor de PostgreSQL.
-* Credenciales de la API de Cloudinary.
-
-## Configuración e Instalación
-
-1. Clonar el repositorio.
-2. Instalar las dependencias del proyecto:
-
+### Installation
+1. Clone the repository and install dependencies:
 ```bash
-   pip install -r requirements.txt
-   ```
+pip install -r requirements.txt
+```
 
-3. Crear un archivo `.env` en el directorio raíz con la siguiente estructura:
-
+2. Create a `.env` file in the root directory:
 ```text
-   DATABASE\\\_URL=postgresql://usuario:password@host/nombre\\\_bd
-   CLOUDINARY\\\_CLOUD\\\_NAME=tu\\\_cloud\\\_name
-   CLOUDINARY\\\_API\\\_KEY=tu\\\_api\\\_key
-   CLOUDINARY\\\_API\\\_SECRET=tu\\\_api\\\_secret
-   SECRET\\\_TOKEN=contrasena\\\_acceso\\\_admin
-   ```
+DATABASE_URL=postgresql://user:password@host/db_name
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+SECRET_TOKEN=admin_access_token
+```
 
-## Ejecución en Entorno Local
-
-Para levantar el servidor de desarrollo con recarga automática, ejecutar:
-
+3. Launch the development server (with hot-reload):
 ```bash
 uvicorn main:app --reload
 ```
+*The application will be served at `http://localhost:8000`.*
 
-La aplicación se servirá por defecto en `http://localhost:8000`.
-
+## License
+Distributed under the MIT License.
